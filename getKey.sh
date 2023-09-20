@@ -1,9 +1,6 @@
 #!/usr/bin/perl
-use File::Grep qw( fgrep fmap fdo);
 use LWP::Simple;
 use Sys::Hostname;
-
-
 
 if ( ($#ARGV + 1) != 1) {
     print Timestamp() . " Default config: plc.conf\n";
@@ -14,14 +11,20 @@ if ( ($#ARGV + 1) != 1) {
 }
 
 
-
-
 $platform = hostname();
 
 print "Config: $configFile, ";
 $identified=0;
 
-if ( fgrep { /myKEY=1/ } $configFile ) {
+my $content;
+open(my $fh, '<', $configFile) or die "cannot open file $configFile";
+{
+    local $/;
+    $content = <$fh>;
+}
+close($fh);
+
+if ( grep { /myKEY=1/ } $content ) {
     print "and an uninitialized key found.\n";
     do "./$configFile";
     $URLbase="http://$server_ipaddress/ntas/";
